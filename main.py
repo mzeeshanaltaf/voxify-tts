@@ -56,3 +56,4 @@ if generate_tts:
         st.toast(f"Audio Generated in {time_taken:.2f} seconds")
         st.subheader('Audio :loud_sound::', divider='gray')
         st.audio(audio, format="audio/mpeg", sample_rate=24000)
+        st.success(f"Audio for {len(text)} characters was generated in {time_taken:.2f} seconds!")
