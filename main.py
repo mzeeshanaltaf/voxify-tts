@@ -2,19 +2,12 @@ import streamlit as st
 import torch
 from models import build_model
 from kokoro import generate
+import time
 
 page_title = "Voxify"
 page_icon = "🗣️"
 st.set_page_config(page_title=page_title, page_icon=page_icon, layout="centered")
 
-# language_option_map = {
-#     "English US",
-#     "English GB",
-# }
-#
-# voice_type_map = {
-#     0: ":material/woman:",
-#     1: ":material/man:"}
 voice_names = {'American': {'Female': ['Default', 'Bella', 'Sarah', 'Nicole', 'Sky'], 'Male': ['Adam', 'Michael']},
                'British': {'Female': ['Emma', 'Isabella'], 'Male': ['George', 'Lewis']},
                }
@@ -32,16 +25,11 @@ st.info("[Powered by Kokoro-82M Text to Speech Model](https://huggingface.co/hex
 col1, col2 = st.columns(2, border=True)
 with col1:
     st.subheader('Language Selection', divider="gray")
-    # language_selection = st.segmented_control("Supported Language(s)", options=language_option_map, default="English US",
-    #      selection_mode="single", label_visibility='collapsed')
     language_selection = st.radio("Supported Language(s)", ["American English", "British English"],
                           index=0, horizontal=True, label_visibility='collapsed')
     selected_language = language_selection.split()[0]
 with col2:
     st.subheader('Voice Type', divider="gray")
-    # voice_type_selection = st.segmented_control("Supported Voice Type", options=voice_type_map.keys(),
-    #     format_func=lambda option: voice_type_map[option],
-    #      selection_mode="single", label_visibility='collapsed')
     voice_type = st.radio("Supported Voice Type", ["Female :female-office-worker:", "Male :male-office-worker:"],
                           index=0, horizontal=True, label_visibility='collapsed')
     selected_voice_type = voice_type.split()[0]
@@ -58,11 +46,13 @@ text = st.text_area('Input Text', "It was the best of times, it was the worst of
 generate_tts = st.button('Generate Audio', type='primary', icon=":material/text_to_speech:")
 if generate_tts:
     with st.spinner('Generating Audio ...'):
+        start_time = time.time()
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         MODEL = build_model('kokoro-v0_19.pth', device)
         VOICE_PACK = torch.load(f'voices/{voice_pack}.pt', weights_only=True).to(device)
         audio, out_ps = generate(MODEL, text, VOICE_PACK, lang=voice_pack[0])
+        end_time = time.time()
+        time_taken = end_time - start_time
+        st.toast(f"Audio Generated in {time_taken:.2f} seconds")
         st.subheader('Audio :loud_sound::', divider='gray')
         st.audio(audio, format="audio/mpeg", sample_rate=24000)
-
-
