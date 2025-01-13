@@ -1,0 +1,6 @@
+streamlit
+phonemizer
+torch
+transformers
+scipy
+munch
